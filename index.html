@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Address & ASN Tracker</title>
+    <!-- Menggunakan Bootstrap 5 untuk tampilan yang rapi -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 50px;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .result-table th {
+            width: 35%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card p-4 mb-4">
+                <h2 class="text-center mb-4 text-primary">IP & ASN Tracker</h2>
+                
+                <!-- Input untuk melacak IP spesifik -->
+                <div class="input-group mb-3">
+                    <input type="text" id="ipInput" class="form-control" placeholder="Masukkan IP Address (Contoh: 8.8.8.8) atau kosongkan untuk IP Anda">
+                    <button class="btn btn-primary" type="button" id="trackBtn">Lacak IP</button>
+                </div>
+                
+                <!-- Area Loading -->
+                <div id="loading" class="text-center d-none my-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Memuat data...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Sedang mengambil data...</p>
+                </div>
+
+                <!-- Area Error -->
+                <div id="errorAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                <!-- Area Hasil -->
+                <div id="resultArea" class="d-none">
+                    <h4 class="mb-3 text-secondary">Hasil Pelacakan:</h4>
+                    <table class="table table-bordered result-table">
+                        <tbody>
+                            <tr>
+                                <th>IP Address</th>
+                                <td id="resIp" class="fw-bold text-success"></td>
+                            </tr>
+                            <tr>
+                                <th>ASN</th>
+                                <td id="resAsn" class="fw-bold text-danger"></td>
+                            </tr>
+                            <tr>
+                                <th>Provider / ISP</th>
+                                <td id="resOrg"></td>
+                            </tr>
+                            <tr>
+                                <th>Kota</th>
+                                <td id="resCity"></td>
+                            </tr>
+                            <tr>
+                                <th>Wilayah/Provinsi</th>
+                                <td id="resRegion"></td>
+                            </tr>
+                            <tr>
+                                <th>Negara</th>
+                                <td id="resCountry"></td>
+                            </tr>
+                            <tr>
+                                <th>Koordinat (Lat, Long)</th>
+                                <td id="resCoords"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const ipInput = document.getElementById("ipInput");
+        const trackBtn = document.getElementById("trackBtn");
+        const loading = document.getElementById("loading");
+        const errorAlert = document.getElementById("errorAlert");
+        const resultArea = document.getElementById("resultArea");
+
+        // Fungsi untuk mengambil data IP
+        async function trackIP(ip = "") {
+            // Reset tampilan
+            loading.classList.remove("d-none");
+            errorAlert.classList.add("d-none");
+            resultArea.classList.add("d-none");
+
+            // Jika ip kosong, API otomatis mendeteksi IP pengguna saat ini
+            const url = ip ? `https://ipapi.co/${ip}/json/` : `https://ipapi.co/json/`;
+
+            try {
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error("Gagal terhubung ke server penyedia data IP.");
+                }
+
+                const data = await response.json();
+
+                // Jika API mengembalikan error (misal format IP salah)
+                if (data.error) {
+                    throw new Error(data.reason || "Format IP tidak valid atau tidak ditemukan.");
+                }
+
+                // Tampilkan data ke tabel
+                document.getElementById("resIp").textContent = data.ip || "-";
+                document.getElementById("resAsn").textContent = data.asn || "-";
+                document.getElementById("resOrg").textContent = data.org || "-";
+                document.getElementById("resCity").textContent = data.city || "-";
+                document.getElementById("resRegion").textContent = data.region || "-";
+                document.getElementById("resCountry").textContent = `${data.country_name} (${data.country_code})`;
+                document.getElementById("resCoords").textContent = `${data.latitude}, ${data.longitude}`;
+
+                // Munculkan area hasil
+                resultArea.classList.remove("d-none");
+
+            } catch (error) {
+                errorAlert.textContent = `Error: ${error.message}`;
+                errorAlert.classList.remove("d-none");
+            } finally {
+                loading.classList.add("d-none");
+            }
+        }
+
+        // Jalankan pelacakan IP pengguna saat halaman pertama kali dimuat
+        trackIP();
+
+        // Jalankan pelacakan saat tombol diklik
+        trackBtn.addEventListener("click", () => {
+            const targetIP = ipInput.value.trim();
+            trackIP(targetIP);
+        });
+
+        // Jalankan pelacakan saat menekan tombol Enter di input
+        ipInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                const targetIP = ipInput.value.trim();
+                trackIP(targetIP);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
