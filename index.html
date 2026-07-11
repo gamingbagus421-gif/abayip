@@ -1,162 +1,316 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azure Dragon - IP Address Tracker</title>
+    <!-- Leaflet CSS untuk Peta Interaktif -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #060b14;
+            --card-bg: rgba(10, 20, 38, 0.85);
+            --neon-blue: #00f3ff;
+            --deep-blue: #0e2447;
+            --text-light: #e2f1ff;
+            --text-gray: #7a91b5;
+        }
 
-<title>IP Address Tracker</title>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        /* Latar Belakang Estetik Siluet Naga Kreatif via CSS */
+        body::before {
+            content: "";
+            position: absolute;
+            top: -10%;
+            right: -5%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 243, 255, 0.1) 0%, rgba(0,0,0,0) 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+        /* Header & Tema Naga */
+        header {
+            background: linear-gradient(180deg, #091324 0%, rgba(6, 11, 20, 0) 100%);
+            padding: 2.5rem 1rem;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
 
-<link rel="stylesheet" href="style.css">
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            color: var(--text-light);
+            text-shadow: 0 0 15px rgba(0, 243, 255, 0.6);
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+        /* Ornamen Naga Kiri & Kanan (Menggunakan Karakter SVG/Unicode Estetik) */
+        h1::before, h1::after {
+            content: "🐉";
+            font-size: 2rem;
+            filter: drop-shadow(0 0 8px var(--neon-blue));
+        }
 
+        header p {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+        }
+
+        /* Form Pencarian */
+        .search-container {
+            margin: 1.5rem auto 0;
+            max-width: 550px;
+            display: flex;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+            border-radius: 30px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 243, 255, 0.3);
+        }
+
+        .search-container input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: none;
+            outline: none;
+            background: rgba(14, 36, 71, 0.9);
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .search-container input::placeholder {
+            color: var(--text-gray);
+        }
+
+        .search-container button {
+            background: linear-gradient(45deg, #00bfff, var(--neon-blue));
+            color: var(--bg-color);
+            border: none;
+            padding: 0 1.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Cinzel', serif;
+        }
+
+        .search-container button:hover {
+            background: linear-gradient(45deg, var(--neon-blue), #00bfff);
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.5);
+            letter-spacing: 1px;
+        }
+
+        /* Panel Informasi Ringkas */
+        .info-panel {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 243, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            max-width: 1100px;
+            width: 90%;
+            margin: -2rem auto 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            position: relative;
+            z-index: 20;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .info-box {
+            text-align: center;
+            border-right: 1px solid rgba(122, 145, 181, 0.2);
+        }
+
+        .info-box:last-child {
+            border-right: none;
+        }
+
+        @media (max-width: 768px) {
+            .info-box {
+                border-right: none;
+                border-bottom: 1px solid rgba(122, 145, 181, 0.2);
+                padding-bottom: 1rem;
+            }
+            .info-box:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+            .info-panel {
+                margin-top: 1rem;
+            }
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-gray);
+            letter-spacing: 2px;
+            margin-bottom: 0.4rem;
+        }
+
+        .info-data {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-light);
+            word-wrap: break-word;
+        }
+
+        /* Area Peta */
+        #map {
+            flex: 1;
+            width: 100%;
+            min-height: 450px;
+            z-index: 1;
+            border-top: 2px solid rgba(0, 243, 255, 0.2);
+        }
+
+        /* Kustomisasi Tampilan Peta Gelap/Aesthetic */
+        .leaflet-layer,
+        .leaflet-control-zoom-in,
+        .leaflet-control-zoom-out {
+            filter: invert(100%) hue-rotate(190deg) brightness(95%) contrast(90%);
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="background"></div>
-
-<div class="container">
-
-<header>
-
-<h1>
-<i class="fa-solid fa-location-dot"></i>
-IP Address Tracker
-</h1>
-
-<p>
-Track any IPv4 or IPv6 address instantly with detailed information.
-</p>
-
-</header>
-
-<div class="search-box">
-
-<input
-type="text"
-id="ipInput"
-placeholder="Enter IP Address (Example: 8.8.8.8)"
-autocomplete="off">
-
-<button id="searchBtn">
-
-<i class="fa-solid fa-magnifying-glass"></i>
-
-Search
-
-</button>
-
-</div>
-
-<div class="cards">
-
-<div class="card">
-
-<span>IP ADDRESS</span>
-
-<h2 id="ip">Loading...</h2>
-
-</div>
-
-<div class="card">
-
-<span>COUNTRY</span>
-
-<h2 id="country">Loading...</h2>
-
-</div>
-
-<div class="card">
-
-<span>CITY</span>
-
-<h2 id="city">Loading...</h2>
-
-</div>
-
-<div class="card">
-
-<span>REGION</span>
-
-<h2 id="region">Loading...</h2>
-
-</div>
-
-<div class="card">
-
-<span>ISP</span>
-
-<h2 id="isp">Loading...</h2>
-
-</div>
-
-<div class="card">
-
-<span>TIME ZONE</span>
-
-<h2 id="timezone">Loading...</h2>
-
-</div>
-
-<div class="card">
-
-<span>LATITUDE</span>
-
-<h2 id="lat">Loading...</h2>
-
-</div>
-
-<div class="card">
-
-<span>LONGITUDE</span>
-
-<h2 id="lon">Loading...</h2>
-
-</div>
-
-</div>
-
-<section class="map-container">
-
-<div class="map-header">
-
-<h3>
-
-<i class="fa-solid fa-earth-asia"></i>
-
-Location Map
-
-</h3>
-
-</div>
-
-<div id="map"></div>
-
-</section>
-
-<footer>
-
-<p>
-
-Made with ❤️ using Node.js, Leaflet & OpenStreetMap
-
-</p>
-
-</footer>
-
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script src="app.js"></script>
-
+    <header>
+        <h1>Azure Dragon</h1>
+        <p>Aesthetic IP Address Tracker & Geolocation</p>
+        
+        <div class="search-container">
+            <input type="text" id="ip-input" placeholder="Masukkan IP Address (Contoh: 8.8.8.8)...">
+            <button id="search-btn">SEEK</button>
+        </div>
+    </header>
+
+    <div class="info-panel">
+        <div class="info-box">
+            <div class="info-label">IP Address</div>
+            <div class="info-data" id="info-ip">-</div>
+        </div>
+        <div class="info-box">
+            <div class="info-label">Lokasi</div>
+            <div class="info-data" id="info-location">-</div>
+        </div>
+        <div class="info-box">
+            <div class="info-label">Zona Waktu</div>
+            <div class="info-data" id="info-timezone">-</div>
+        </div>
+        <div class="info-box">
+            <div class="info-label">Provider (ISP)</div>
+            <div class="info-data" id="info-isp">-</div>
+        </div>
+    </div>
+
+    <!-- Container untuk Peta -->
+    <div id="map"></div>
+
+    <!-- Leaflet JS untuk Peta -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Inisialisasi Peta Dunia Default awal (Jakarta sebagai titik tengah sementara)
+        const map = L.map('map').setView([-6.2088, 106.8456], 13);
+        
+        // Menggunakan tile openstreetmap gratis
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Custom Marker Neon Blue untuk menandai lokasi
+        const customIcon = L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="background-color: #00f3ff; width: 16px; height: 16px; border-radius: 50%; box-shadow: 0 0 12px #00f3ff; border: 2px solid #fff;"></div>`,
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
+        });
+
+        let marker = L.marker([-6.2088, 106.8456], {icon: customIcon}).addTo(map);
+
+        // Fungsi utama melacak IP menggunakan API ipapi.co (Gratis & Akurat)
+        async function trackIP(ipAddress = '') {
+            const url = ipAddress ? `https://ipapi.co/${ipAddress}/json/` : `https://ipapi.co/json/`;
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('IP tidak ditemukan atau kuota API habis');
+                
+                const data = await response.json();
+                
+                if(data.error) {
+                    alert("IP format salah atau tidak valid!");
+                    return;
+                }
+
+                // Update UI data teks
+                document.getElementById('info-ip').innerText = data.ip || '-';
+                document.getElementById('info-location').innerText = `${data.city || ''}, ${data.region || ''}, ${data.country_name || '-'}`;
+                document.getElementById('info-timezone').innerText = data.timezone || '-';
+                document.getElementById('info-isp').innerText = data.org || '-';
+
+                // Update koordinat peta ke posisi IP yang dicari
+                const lat = data.latitude;
+                const lon = data.longitude;
+
+                if (lat && lon) {
+                    map.setView([lat, lon], 13);
+                    marker.setLatLng([lat, lon]);
+                    marker.bindPopup(`<b>Naga Azure Menemukan Posisi!</b><br>${data.city}, ${data.country_name}`).openPopup();
+                }
+
+            } catch (error) {
+                console.error('Error fetching IP data:', error);
+                alert('Gagal mengambil data IP. Pastikan format benar atau coba lagi nanti.');
+            }
+        }
+
+        // Trigger pencarian saat tombol diklik
+        document.getElementById('search-btn').addEventListener('click', () => {
+            const ipValue = document.getElementById('ip-input').value.trim();
+            trackIP(ipValue);
+        });
+
+        // Trigger pencarian saat menekan tombol 'Enter' di keyboard
+        document.getElementById('ip-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const ipValue = document.getElementById('ip-input').value.trim();
+                trackIP(ipValue);
+            }
+        });
+
+        // Jalankan pelacakan IP user sendiri secara otomatis saat web pertama kali dibuka
+        window.addEventListener('DOMContentLoaded', () => {
+            trackIP();
+        });
+    </script>
 </body>
 </html>
