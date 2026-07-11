@@ -1,260 +1,162 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Next-Gen IP & ASN Tracker</title>
-    <!-- Menggunakan Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #0a0c10;
-            color: #e2e8f0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding-top: 60px;
-            overflow-x: hidden;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        /* Ambient Background Glow */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: 
-                radial-gradient(circle at 80% 20%, rgba(0, 242, 254, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 20% 80%, rgba(255, 0, 128, 0.1) 0%, transparent 50%);
-            z-index: -1;
-        }
+<title>IP Address Tracker</title>
 
-        /* Cyberpunk Card Framework */
-        .cyber-card {
-            background: rgba(13, 17, 23, 0.85);
-            border: 1px solid rgba(0, 242, 254, 0.3);
-            border-radius: 16px;
-            box-shadow: 0 0 25px rgba(0, 242, 254, 0.15), inset 0 0 15px rgba(0, 242, 254, 0.05);
-            backdrop-filter: blur(8px);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-        .cyber-card:hover {
-            border-color: rgba(0, 242, 254, 0.6);
-            box-shadow: 0 0 35px rgba(0, 242, 254, 0.25), inset 0 0 20px rgba(0, 242, 254, 0.1);
-        }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-        /* Glowing Text Header */
-        .neon-title {
-            color: #00f2fe;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
-        }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
-        /* Custom Input Styling */
-        .cyber-input {
-            background-color: #161b22;
-            border: 1px solid #30363d;
-            color: #00f2fe;
-            border-radius: 8px 0 0 8px !important;
-            font-family: monospace;
-        }
+<link rel="stylesheet" href="style.css">
 
-        .cyber-input:focus {
-            background-color: #0d1117;
-            border-color: #00f2fe;
-            color: #00f2fe;
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
-        }
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-        /* Futuristic Button */
-        .cyber-btn {
-            background: linear-gradient(135deg, #007bff 0%, #00f2fe 100%);
-            border: none;
-            color: #0a0c10;
-            font-weight: bold;
-            letter-spacing: 1px;
-            padding: 0 25px;
-            border-radius: 0 8px 8px 0 !important;
-            box-shadow: 0 0 10px rgba(0, 123, 255, 0.4);
-            transition: all 0.3s ease;
-        }
-
-        .cyber-btn:hover {
-            background: linear-gradient(135deg, #ff007f 0%, #7928ca 100%);
-            color: #fff;
-            box-shadow: 0 0 20px rgba(255, 0, 128, 0.6);
-        }
-
-        /* Technical Data Table */
-        .cyber-table {
-            color: #cbd5e1;
-            border-color: #21262d;
-            margin-top: 20px;
-        }
-
-        .cyber-table th {
-            width: 35%;
-            background-color: rgba(22, 27, 34, 0.6);
-            color: #8b949e;
-            font-family: monospace;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            vertical-align: middle;
-        }
-
-        .cyber-table td {
-            font-family: monospace;
-            font-size: 0.95rem;
-            background-color: transparent;
-            vertical-align: middle;
-        }
-
-        /* Neon Highlights */
-        .glow-blue { color: #00f2fe; text-shadow: 0 0 5px rgba(0, 242, 254, 0.5); }
-        .glow-pink { color: #ff007f; text-shadow: 0 0 5px rgba(255, 0, 128, 0.5); }
-        .glow-green { color: #39ff14; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
-
-        /* Loader Animation */
-        .cyber-spinner {
-            width: 3rem;
-            height: 3rem;
-            border-color: transparent;
-            border-top-color: #ff007f;
-            border-right-color: #00f2fe;
-            filter: drop-shadow(0 0 8px #00f2fe);
-        }
-
-        @media (max-width: 576px) {
-            .input-group { flex-direction: column; }
-            .cyber-input { border-radius: 8px !important; margin-bottom: 10px; text-align: center; }
-            .cyber-btn { border-radius: 8px !important; width: 100%; padding: 12px; }
-            .cyber-table th { width: 40%; font-size: 0.75rem; }
-            .cyber-table td { font-size: 0.85rem; }
-        }
-    </style>
 </head>
+
 <body>
 
+<div class="background"></div>
+
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-10 col-lg-8">
-            <div class="cyber-card p-4 p-md-5 mb-5">
-                <h2 class="text-center mb-4 neon-title">IP Network Scanner</h2>
-                
-                <!-- Input Group -->
-                <div class="input-group mb-4">
-                    <input type="text" id="ipInput" class="form-control cyber-input" placeholder="Masukkan IP Target (contoh: 8.8.8.8) atau kosongkan untuk IP Anda">
-                    <button class="btn cyber-btn" type="button" id="trackBtn">INITIALIZE SCAN</button>
-                </div>
-                
-                <!-- Loading State -->
-                <div id="loading" class="text-center d-none my-4">
-                    <div class="spinner-border cyber-spinner" role="status"></div>
-                    <p class="mt-3 text-muted style-monospace">Bypassing firewalls & extracting packets...</p>
-                </div>
 
-                <!-- Error State -->
-                <div id="errorAlert" class="alert alert-danger bg-danger-subtle text-danger border-danger d-none" role="alert"></div>
+<header>
 
-                <!-- Results Output -->
-                <div id="resultArea" class="d-none">
-                    <table class="table table-bordered cyber-table">
-                        <tbody>
-                            <tr>
-                                <th>Target IP</th>
-                                <td id="resIp" class="glow-blue fw-bold"></td>
-                            </tr>
-                            <tr>
-                                <th>ASN (Network)</th>
-                                <td id="resAsn" class="glow-pink fw-bold"></td>
-                            </tr>
-                            <tr>
-                                <th>ISP / Organization</th>
-                                <td id="resOrg" class="text-light"></td>
-                            </tr>
-                            <tr>
-                                <th>Geoloc / City</th>
-                                <td id="resCity"></td>
-                            </tr>
-                            <tr>
-                                <th>Region / Province</th>
-                                <td id="resRegion"></td>
-                            </tr>
-                            <tr>
-                                <th>Country Node</th>
-                                <td id="resCountry" class="glow-green"></td>
-                            </tr>
-                            <tr>
-                                <th>Geo Coordinates</th>
-                                <td id="resCoords"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+<h1>
+<i class="fa-solid fa-location-dot"></i>
+IP Address Tracker
+</h1>
+
+<p>
+Track any IPv4 or IPv6 address instantly with detailed information.
+</p>
+
+</header>
+
+<div class="search-box">
+
+<input
+type="text"
+id="ipInput"
+placeholder="Enter IP Address (Example: 8.8.8.8)"
+autocomplete="off">
+
+<button id="searchBtn">
+
+<i class="fa-solid fa-magnifying-glass"></i>
+
+Search
+
+</button>
+
 </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const ipInput = document.getElementById("ipInput");
-        const trackBtn = document.getElementById("trackBtn");
-        const loading = document.getElementById("loading");
-        const errorAlert = document.getElementById("errorAlert");
-        const resultArea = document.getElementById("resultArea");
+<div class="cards">
 
-        async function trackIP(ip = "") {
-            loading.classList.remove("d-none");
-            errorAlert.classList.add("d-none");
-            resultArea.classList.add("d-none");
+<div class="card">
 
-            // Menggunakan Endpoint API ipwhois.io
-            const url = ip ? `https://ipwhois.app/json/${ip}` : `https://ipwhois.app/json/`;
+<span>IP ADDRESS</span>
 
-            try {
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error("Gagal mengambil respon dari data pusat.");
-                }
+<h2 id="ip">Loading...</h2>
 
-                const data = await response.json();
+</div>
 
-                // Handler Error Spesifik dari ipwhois.io jika IP gagal/tidak valid
-                if (data.success === false) {
-                    throw new Error(data.message || "IP Address tidak dikenali.");
-                }
+<div class="card">
 
-                // Memetakan struktur data baru dari ipwhois.io
-                document.getElementById("resIp").textContent = data.ip || "-";
-                document.getElementById("resAsn").textContent = data.asn || "-";
-                document.getElementById("resOrg").textContent = data.org || "-";
-                document.getElementById("resCity").textContent = data.city || "-";
-                document.getElementById("resRegion").textContent = data.region || "-";
-                document.getElementById("resCountry").textContent = `${data.country} (${data.country_code})`;
-                document.getElementById("resCoords").textContent = `${data.latitude}, ${data.longitude}`;
+<span>COUNTRY</span>
 
-                resultArea.classList.remove("d-none");
+<h2 id="country">Loading...</h2>
 
-            } catch (error) {
-                errorAlert.textContent = `CRITICAL ERROR: ${error.message}`;
-                errorAlert.classList.remove("d-none");
-            } finally {
-                loading.classList.add("d-none");
-            }
-        }
+</div>
 
-        // Jalankan pelacakan awal
-        trackIP();
+<div class="card">
 
-        // Trigger Event click & enter
-        trackBtn.addEventListener("click", () => trackIP(ipInput.value.trim()));
-        ipInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") trackIP(ipInput.value.trim());
-        });
-    });
-</script>
+<span>CITY</span>
+
+<h2 id="city">Loading...</h2>
+
+</div>
+
+<div class="card">
+
+<span>REGION</span>
+
+<h2 id="region">Loading...</h2>
+
+</div>
+
+<div class="card">
+
+<span>ISP</span>
+
+<h2 id="isp">Loading...</h2>
+
+</div>
+
+<div class="card">
+
+<span>TIME ZONE</span>
+
+<h2 id="timezone">Loading...</h2>
+
+</div>
+
+<div class="card">
+
+<span>LATITUDE</span>
+
+<h2 id="lat">Loading...</h2>
+
+</div>
+
+<div class="card">
+
+<span>LONGITUDE</span>
+
+<h2 id="lon">Loading...</h2>
+
+</div>
+
+</div>
+
+<section class="map-container">
+
+<div class="map-header">
+
+<h3>
+
+<i class="fa-solid fa-earth-asia"></i>
+
+Location Map
+
+</h3>
+
+</div>
+
+<div id="map"></div>
+
+</section>
+
+<footer>
+
+<p>
+
+Made with ❤️ using Node.js, Leaflet & OpenStreetMap
+
+</p>
+
+</footer>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="app.js"></script>
 
 </body>
 </html>
