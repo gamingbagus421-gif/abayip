@@ -1,3 +1,10 @@
+Berikut adalah kode lengkap `index.html` yang sudah diperbarui secara total. Di sini, saya mengganti API-nya ke **`ipwho.is`**.
+
+API ini **100% gratis, sangat stabil, mendukung HTTPS (aman jika ingin di-upload ke internet nanti), dan bebas dari masalah CORS/error** yang sering terjadi di API lain.
+
+Silakan salin seluruh kode di bawah ini dan masukkan ke file `index.html` milikmu:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,7 +43,7 @@
             position: relative;
         }
 
-        /* Latar Belakang Estetik Siluet Naga Kreatif via CSS */
+        /* Latar Belakang Efek Cahaya Naga */
         body::before {
             content: "";
             position: absolute;
@@ -71,7 +78,7 @@
             gap: 12px;
         }
 
-        /* Ornamen Naga Kiri & Kanan (Menggunakan Karakter SVG/Unicode Estetik) */
+        /* Ornamen Naga */
         h1::before, h1::after {
             content: "🐉";
             font-size: 2rem;
@@ -126,7 +133,7 @@
             letter-spacing: 1px;
         }
 
-        /* Panel Informasi Ringkas */
+        /* Panel Informasi */
         .info-panel {
             background: var(--card-bg);
             border: 1px solid rgba(0, 243, 255, 0.15);
@@ -215,19 +222,19 @@
     <div class="info-panel">
         <div class="info-box">
             <div class="info-label">IP Address</div>
-            <div class="info-data" id="info-ip">-</div>
+            <div class="info-data" id="info-ip">Memuat...</div>
         </div>
         <div class="info-box">
             <div class="info-label">Lokasi</div>
-            <div class="info-data" id="info-location">-</div>
+            <div class="info-data" id="info-location">Memuat...</div>
         </div>
         <div class="info-box">
             <div class="info-label">Zona Waktu</div>
-            <div class="info-data" id="info-timezone">-</div>
+            <div class="info-data" id="info-timezone">Memuat...</div>
         </div>
         <div class="info-box">
             <div class="info-label">Provider (ISP)</div>
-            <div class="info-data" id="info-isp">-</div>
+            <div class="info-data" id="info-isp">Memuat...</div>
         </div>
     </div>
 
@@ -238,15 +245,15 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
-        // Inisialisasi Peta Dunia Default awal (Jakarta sebagai titik tengah sementara)
-        const map = L.map('map').setView([-6.2088, 106.8456], 13);
+        // Inisialisasi Peta Dunia Default awal (titik tengah 0,0)
+        const map = L.map('map').setView([0, 0], 2);
         
-        // Menggunakan tile openstreetmap gratis
+        // Menggunakan tile OpenStreetMap gratis
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // Custom Marker Neon Blue untuk menandai lokasi
+        // Custom Marker Neon Blue
         const customIcon = L.divIcon({
             className: 'custom-marker',
             html: `<div style="background-color: #00f3ff; width: 16px; height: 16px; border-radius: 50%; box-shadow: 0 0 12px #00f3ff; border: 2px solid #fff;"></div>`,
@@ -254,52 +261,54 @@
             iconAnchor: [8, 8]
         });
 
-        let marker = L.marker([-6.2088, 106.8456], {icon: customIcon}).addTo(map);
+        let marker = L.marker([0, 0], {icon: customIcon}).addTo(map);
 
-        // Fungsi utama melacak IP menggunakan API ipapi.co (Gratis & Akurat)
+        // Fungsi Utama Melacak IP (Menggunakan ipwho.is yang aman, gratis, & mendukung HTTPS)
         async function trackIP(ipAddress = '') {
-            const url = ipAddress ? `https://ipapi.co/${ipAddress}/json/` : `https://ipapi.co/json/`;
+            const url = `https://ipwho.is/${ipAddress}`;
             
             try {
                 const response = await fetch(url);
-                if (!response.ok) throw new Error('IP tidak ditemukan atau kuota API habis');
+                if (!response.ok) throw new Error('Koneksi bermasalah');
                 
                 const data = await response.json();
                 
-                if(data.error) {
-                    alert("IP format salah atau tidak valid!");
+                // Jika input IP tidak valid/fail
+                if (data.success === false) {
+                    alert(`Gagal: ${data.message || 'IP tidak valid'}`);
                     return;
                 }
 
-                // Update UI data teks
+                // Update data teks ke UI
                 document.getElementById('info-ip').innerText = data.ip || '-';
-                document.getElementById('info-location').innerText = `${data.city || ''}, ${data.region || ''}, ${data.country_name || '-'}`;
-                document.getElementById('info-timezone').innerText = data.timezone || '-';
-                document.getElementById('info-isp').innerText = data.org || '-';
+                document.getElementById('info-location').innerText = `${data.city || ''}, ${data.region || ''}, ${data.country || '-'}`;
+                document.getElementById('info-timezone').innerText = data.timezone?.id || '-';
+                document.getElementById('info-isp').innerText = data.connection?.isp || '-';
 
-                // Update koordinat peta ke posisi IP yang dicari
+                // Ambil koordinat GPS
                 const lat = data.latitude;
                 const lon = data.longitude;
 
                 if (lat && lon) {
+                    // Pindahkan titik peta dan ganti fokus kamera
                     map.setView([lat, lon], 13);
                     marker.setLatLng([lat, lon]);
-                    marker.bindPopup(`<b>Naga Azure Menemukan Posisi!</b><br>${data.city}, ${data.country_name}`).openPopup();
+                    marker.bindPopup(`<b>Naga Azure Menemukan Posisi!</b><br>${data.city}, ${data.country}`).openPopup();
                 }
 
             } catch (error) {
-                console.error('Error fetching IP data:', error);
-                alert('Gagal mengambil data IP. Pastikan format benar atau coba lagi nanti.');
+                console.error('Error fetching data:', error);
+                alert('Terjadi kesalahan jaringan atau API sedang sibuk. Silakan coba lagi.');
             }
         }
 
-        // Trigger pencarian saat tombol diklik
+        // Event saat tombol "SEEK" diklik
         document.getElementById('search-btn').addEventListener('click', () => {
             const ipValue = document.getElementById('ip-input').value.trim();
             trackIP(ipValue);
         });
 
-        // Trigger pencarian saat menekan tombol 'Enter' di keyboard
+        // Event saat menekan tombol "Enter" di kolom input
         document.getElementById('ip-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 const ipValue = document.getElementById('ip-input').value.trim();
@@ -307,10 +316,12 @@
             }
         });
 
-        // Jalankan pelacakan IP user sendiri secara otomatis saat web pertama kali dibuka
+        // Melacak IP pengguna otomatis saat pertama kali web dibuka
         window.addEventListener('DOMContentLoaded', () => {
             trackIP();
         });
     </script>
 </body>
 </html>
+
+```
